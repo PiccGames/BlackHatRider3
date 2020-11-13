@@ -2,8 +2,106 @@ var track, ia = 0;
 const GAME = {
     canvas: document.getElementById("canvas_rider"),
     toolbar: {
-        get left() {
-            return document.getElementById("toolbar1");
+        drawLeft: function() {
+            K.lineWidth = 1;
+            K.lineCap = "round";
+            K.globalAlpha = 1;
+            K.strokeStyle = K.fillStyle = "#000";
+            for(var i = 0; i < 200; i += 25) {
+                if(i == 75 ||   i == 125) continue;
+                K.beginPath();
+                K.moveTo(25, i);
+                K.lineTo(25, i + 25);
+                K.lineTo(0, i + 25);
+                K.stroke();
+                K.fillStyle = "#fff";
+                K.fillRect(0, i + 1, 25, 24);
+                K.beginPath();
+                K.moveTo(25, i);
+                K.lineTo(25, i + 25);
+                K.lineTo(0, i + 25);
+                K.stroke();
+                K.fillStyle = "#fff";
+                K.fillRect(0, i + 1, 25, 24);
+                K.strokeStyle = K.fillStyle = "#000";
+                switch(i) {
+                    case 0:
+                        K.fillRect(5, 4, 5, 16);
+                        K.fillRect(13, 4, 5, 16);
+                        break;
+                    case 25:
+                        K.fillRect(5, i + 5, 3, 16);
+                        K.beginPath();
+                        K.moveTo(6, i + 12.5);
+                        K.lineTo(19, i + 20);
+                        K.lineTo(19, i + 5);
+                        K.fill();
+                        break;
+                    case 50:
+                        K.fillRect(2, i + 5, 3, 16);
+                        K.beginPath();
+                        K.moveTo(4, i + 12.5);
+                        K.lineTo(13, i + 20);
+                        K.lineTo(13, i + 5);
+                        K.moveTo(12, i + 12.5);
+                        K.lineTo(21, i + 20);
+                        K.lineTo(21, i + 5);
+                        K.fill();
+                        break;
+                    case 100:
+                        var a = new Image();
+                        a.src = "https://i.imgur.com/1b4LWTk.png";
+                        K.beginPath();
+                        K.drawImage(a, 1, i);
+                        K.moveTo(0, i);
+                        K.lineTo(25, i);
+                        K.stroke();
+                        break;
+                    case 150:
+                        K.beginPath();
+                        K.moveTo(0, i);
+                        K.lineTo(25, i);
+                        K.stroke();
+                        K.lineWidth = 2;
+                        K.shadowColor = "#000";
+                        K.shadowOffsetX = 1;
+                        K.shadowOffsetY = 1;
+                        K.shadowBlur = 3;
+                        K.beginPath();
+                        K.moveTo(6, i + 19);
+                        K.lineTo(19, i + 6);
+                        K.stroke();
+                        K.shadowColor = "#ffffff00";
+                        break;
+                    case 175:
+                        K.lineWidth = 2;
+                        K.beginPath();
+                        K.moveTo(6, i + 14.5);
+                        K.lineTo(6, i + 19);
+                        K.lineTo(9.5, i + 19);
+                        K.moveTo(19, i + 14.5);
+                        K.lineTo(19, i + 19);
+                        K.lineTo(14.5, i + 19);
+                        K.moveTo(19, i + 9.5);
+                        K.lineTo(19, i + 6);
+                        K.lineTo(14.5, i + 6);
+                        K.moveTo(9.5, i + 6);
+                        K.lineTo(6, i + 6);
+                        K.lineTo(6, i + 9.5);
+                        K.stroke();
+                }
+            }
+        },
+        drawRight: function() {
+            K.lineWidth = 1;
+            K.globalAlpha = 1;
+            for(var i = 0; i < 450; i += 25) {
+                K.moveTo(canvas.width, i + 25);
+                K.lineTo(canvas.width - 25, i + 25);
+                if(i == 175 || i == 400) continue;
+                K.lineTo(canvas.width - 25, i);
+                K.stroke();
+            }
         },
         get right() {
             return document.getElementById("toolbar2");
@@ -20,7 +118,7 @@ const GAME = {
             GAME.toolbar.right.style.left = canvas.width - (document.documentElement.offsetHeight <= window.innerHeight ? 41 : 39) + "px",
             V[2] = Tb[0][7] = "Disable fullscreen ( ESC or F )",
             canvas.style.zIndex = 2E3,
-            GAME.toolbar.left.style.zIndex = GAME.toolbar.right.style.zIndex = 2000) : this.smallscreen
+            GAME.toolbar.right.style.zIndex = 2000) : this.smallscreen
             this.adjust
         },
         get smallscreen() {
@@ -31,15 +129,14 @@ const GAME = {
             canvas.style.position = "static";
             canvas.style.border = "1px solid black";
             GAME.toolbar.right.style.left = canvas.offsetLeft + canvas.width - 22 + "px";
-            canvas.style.zIndex = GAME.toolbar.left.style.zIndex = GAME.toolbar.right.style.zIndex = 2;
+            canvas.style.zIndex = GAME.toolbar.right.style.zIndex = 2;
             this.adjust
         },
         get adjust() {
             K.lineCap = "round";
             K.lineJoin = "round";
             K.font = "8px eiven";
-            GAME.toolbar.left.style.top = GAME.toolbar.right.style.top = canvas.offsetTop + "px";
-            GAME.toolbar.left.style.left = canvas.offsetLeft + "px"
+            GAME.toolbar.right.style.top = canvas.offsetTop + "px";
         }
     },
     get ctx() {
@@ -1705,7 +1802,7 @@ const GAME = {
                 this.id = a;
                 this.vehicle = "BMX";
                 this.players = [];
-                this.Kb = 1;
+                this.editor = 1;
                 this.undoManager = new GAME.UndoManager();
                 this.paused = !1;
                 K.fillText("Loading track... Please wait.", 36, 16);
@@ -1713,16 +1810,15 @@ const GAME = {
                 this.id ? 7 < this.id.length ? (GAME.toolbar.right.style.display ? (a = this.id,
                 this.id = void 0,
                 GAME.toolbar.right.style.display = "block",
-                tool = "line") : ("v1," !== a.substr(0, 3) && (this.Kb = 0))) : ("v1," !== a.substr(0, 3) && (this.Kb = 0)) : (a = "-18 1i 18 1i##",
+                tool = "line") : ("v1," !== a.substr(0, 3) && (this.editor = 0))) : ("v1," !== a.substr(0, 3) && (this.editor = 0)) : (a = "-18 1i 18 1i##",
                 GAME.toolbar.right.style.display = "block",
                 tool = "line");
                 this.code = a;
                 var f = a.split("#")
                   , h = f[0] ? f[0].split(",") : []
                   , a = 0;
-                for(c = h.length; a < c; a++)
-                    if(e = h[a].split(/\s+/g),
-                    3 < e.length){
+                for(c = h.length; a < c; a++) {
+                    if(e = h[a].split(/\s+/g), 3 < e.length) {
                         b = 0;
                         for(d = e.length - 2; b < d; b += 2)
                             this.addLine({
@@ -1733,12 +1829,12 @@ const GAME = {
                                 y: parseInt(e[b + 3], 32)
                             })
                     }
-                if(1 < f.length){
+                }
+                if(1 < f.length) {
                     h = f[1].split(",");
                     a = 0;
-                    for(c = h.length; a < c; a++)
-                        if(e = h[a].split(/\s+/g),
-                        3 < e.length){
+                    for(c = h.length; a < c; a++) {
+                        if(e = h[a].split(/\s+/g), 3 < e.length) {
                             b = 0;
                             for(d = e.length - 2; b < d; b += 2)
                                 this.addLine({
@@ -1749,6 +1845,7 @@ const GAME = {
                                     y: parseInt(e[b + 3], 32)
                                 }, !0)
                         }
+                    }
                 }
                 this.targets = 0;
                 this.powerups = [];
@@ -1816,8 +1913,8 @@ const GAME = {
             }
             gotoCheckpoint(){
                 this.removeCollectedItems();
-                this.paused = JSON.parse(localStorage.pauseOnEnter) ? true : !1;
-                JSON.parse(localStorage.pauseOnEnter) ? window.autoPause = true : null;
+                //this.paused = JSON.parse(localStorage.pauseOnEnter) ? true : !1;
+                //JSON.parse(localStorage.pauseOnEnter) ? window.autoPause = true : null;
                 var checkpoints = this.firstPlayer.checkpoints,
                     checkpointsCache = this.firstPlayer.checkpointsCache;
                 this.firstPlayer = this.players[0] = this.vehicle === "BMX" ? new GAME.BMXBike(this, 1, this.firstPlayer.checkpoints) : new GAME.MountainBike(this, 1, this.firstPlayer.checkpoints);
@@ -1970,10 +2067,11 @@ const GAME = {
             }
             render() {
                 this.draw();
-                //this.firstPlayer && this.firstPlayer.draw();
                 for(var i in this.players) {
                     this.players[i].draw();
                 }
+                GAME.toolbar.drawLeft()
+                this.editor && GAME.toolbar.drawRight()
             }
             draw(){
                 function a(){
@@ -2098,7 +2196,7 @@ const GAME = {
                         if("brush" === tool || "scenery brush" === tool)
                             i += " ( size " + Kb + " )"
                     }
-                    V && (!V[0] && !V[1]) && (i += " - " + (this.paused ? "Unp" : "P") + "ause ( SPACE )");
+                    V && V[2] != void 0 && (!V[0] && !V[1]) && (i += " - " + (this.paused ? "Unp" : "P") + "ause ( SPACE )");
                     K.strokeText(i = ": " + this.firstPlayer.targetsCollected + " / " + this.targets + "  -  " + i, 50, 16);
                     K.fillText(i, 50, 16);
                     if(this.players.length > 1) {
@@ -2111,7 +2209,7 @@ const GAME = {
                             K.fillStyle = "#000"
                         }
                     }
-                    V && (V[0] ? (K.textAlign = "right",
+                    V && V[2] != void 0 && (V[0] ? (K.textAlign = "right",
                     document.documentElement.offsetHeight <= window.innerHeight ? (K.strokeText(V[2], canvas.width - 36, 15 + 25 * V[1]),
                     K.fillText(V[2], canvas.width - 36, 15 + 25 * V[1])) : (K.strokeText(V[2], canvas.width - 51, 15 + 25 * V[1]),
                     K.fillText(V[2], canvas.width - 51, 15 + 25 * V[1])),
@@ -2770,9 +2868,22 @@ document.onkeyup = function(a){
             break;
         }
 };
-GAME.toolbar.left.onmousemove = function(a){
-    a = Math.floor((a.clientY - GAME.toolbar.left.offsetTop + window.pageYOffset) / 25);
-    V = [0, a, Tb[0][a]]
+canvas.onmousemove = (a, b) => {
+    b = Math.floor((a.clientX - canvas.offsetLeft + window.pageXOffset) / 25);
+    a = Math.floor((a.clientY - canvas.offsetTop + window.pageYOffset) / 25);
+    if(b < 1) {
+        V = [0, a, Tb[0][a]];
+        document.body.style.cursor = "default";
+    } else if(track.editor && b > 30) {
+        V = [1, a, Tb[1][a]];
+        if(14 === a && ("scenery line" === tool || "scenery brush" === tool)) {
+            V[2] = "Shorten last set of scenery lines ( Z )";
+        }
+        document.body.style.cursor = "default";
+    } else {
+        V = !1;
+        document.body.style.cursor = "move";
+    }
 };
 GAME.toolbar.right.onmousemove = function(a){
     a = Math.floor((a.clientY - GAME.toolbar.right.offsetTop + window.pageYOffset) / 25);
@@ -2780,35 +2891,11 @@ GAME.toolbar.right.onmousemove = function(a){
     if(14 === a && ("scenery line" === tool || "scenery brush" === tool))
         V[2] = "Shorten last set of scenery lines ( Z )"
 };
-GAME.toolbar.left.onmousedown = (a) => {
-    track.cameraLock = !1;
-    switch (Math.floor((a.clientY - GAME.toolbar.left.offsetTop + window.pageYOffset) / 25) + 1){
-    case 1:
-        track.paused = !track.paused;
-        break;
-    case 3:
-        track.removeCheckpoint();
-    case 2:
-        track.gotoCheckpoint();
-        break;
-    case 5:
-        track.switchBike();
-        break;
-    case 7:
-        Ib ? (Ib = !1,
-        V[2] = Tb[0][6] = "Enable line shading") : (Ib = !0,
-        V[2] = Tb[0][6] = "Disable line shading");
-        track.U = [];
-        break;
-    case 8:
-        GAME.resizeCanvas.fullscreen
-    }
-};
 GAME.toolbar.right.onmousedown = function(a){
     if(track.id !== void 0)
         return !1;
     track.cameraLock = !1;
-    switch (Math.floor((a.clientY - GAME.toolbar.left.offsetTop + window.pageYOffset) / 25) + 1){
+    switch (Math.floor((a.clientY - GAME.toolbar.right.offsetTop + window.pageYOffset) / 25) + 1){
     case 1:
         tool = "brush";
         break;
@@ -2868,7 +2955,83 @@ canvas.onmousedown = function(a){
     a.preventDefault();
     S = !0;
     track.cameraLock = !1;
-    if(window.BHR_RCE_ENABLED && 2 === a.button && "camera" !== tool) {
+    if(Math.floor((a.clientX - canvas.offsetLeft + window.pageXOffset) / 25) < 1) {
+        switch(Math.floor((a.clientY - canvas.offsetTop + window.pageYOffset) / 25) + 1) {
+            case 1:
+                track.paused = !track.paused;
+                break;
+            case 2:
+                track.gotoCheckpoint();
+                break;
+            case 3:
+                track.removeCheckpoint();
+                break;
+            case 5:
+                track.switchBike();
+                break;
+            case 7:
+                Ib ? (Ib = !1,
+                V[2] = Tb[0][6] = "Enable line shading") : (Ib = !0,
+                V[2] = Tb[0][6] = "Disable line shading");
+                track.U = [];
+                break;
+            case 8:
+                GAME.resizeCanvas.fullscreen;
+                break;
+        }
+    } else if(track.editor && Math.floor((a.clientX - canvas.offsetLeft + window.pageXOffset) / 25) > 30) {
+        switch(Math.floor((a.clientY - canvas.offsetTop + window.pageYOffset) / 25) + 1) {
+            case 1:
+                tool = "brush";
+                break;
+            case 2:
+                tool = "scenery brush";
+                break;
+            case 3:
+                tool = "line";
+                break;
+            case 4:
+                tool = "scenery line";
+                break;
+            case 5:
+                tool = "eraser";
+                break;
+            case 6:
+                tool = "camera";
+                break;
+            case 7:
+                1 === Jb ? (Jb = 10,
+                V[2] = Tb[1][6] = "Disable grid snapping ( G )") : (Jb = 1,
+                V[2] = Tb[1][6] = "Enable grid snapping ( G )");
+                break;
+            case 9:
+                tool = "goal";
+                break;
+            case 10:
+                tool = "checkpoint";
+                break;
+            case 11:
+                tool = "boost";
+                break;
+            case 12:
+                tool = "gravity";
+                break;
+            case 13:
+                tool = "bomb";
+                break;
+            case 14:
+                tool = "slow-mo";
+                break;
+            case 15:
+                tool = "antigravity";
+                break;
+            case 16:
+                tool = "teleporter";
+                break;
+            case 18:
+                track.undo()
+            }
+    } else if(window.BHR_RCE_ENABLED && 2 === a.button && "camera" !== tool) {
         var a = track.erase(R);
         a.length && track.pushUndo(() => {
             track.addToSelf(a, !0);
